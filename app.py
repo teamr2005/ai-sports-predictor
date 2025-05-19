@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 
-# 샘플 학습용 데이터 (나중에 실제 경기데이터로 바꾸면 됨)
+# 샘플 학습용 데이터
 data = pd.DataFrame({
     "home_team_id": [1, 2, 3, 4, 5, 6],
     "away_team_id": [2, 3, 1, 5, 6, 4],
-    "home_win": [1, 0, 1, 0, 1, 0]
+    "home_win":     [1, 0, 1, 0, 1, 0]
 })
 
 X = data[["home_team_id", "away_team_id"]]
@@ -16,9 +16,9 @@ y = data["home_win"]
 model = RandomForestClassifier()
 model.fit(X, y)
 
-# Streamlit 웹 UI
+# 웹 UI
 st.title("⚽ AI Soccer Match Predictor")
-st.markdown("Simple example using RandomForest on toy data")
+st.markdown("Simple demo using RandomForest on example data")
 
 home_id = st.number_input("Enter Home Team ID", value=1)
 away_id = st.number_input("Enter Away Team ID", value=2)
