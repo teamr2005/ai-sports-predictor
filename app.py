@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 
 # Load the trained model
-model = joblib.load("soccer_model.pkl")
+model = joblib.load("soccer_model_small.pkl")
 
 st.set_page_config(page_title="AI Soccer Match Predictor", layout="centered")
 st.title("⚽ AI Soccer Match Predictor")
