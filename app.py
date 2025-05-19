@@ -1,63 +1,75 @@
 import streamlit as st
-import random
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+import numpy as np
 
-# 유명 축구 팀 목록
+# 데이터 (예시 - 유명 축구팀)
 team_names = [
-    "Real Madrid", "Barcelona", "Manchester City", "Bayern Munich",
-    "Liverpool", "Arsenal", "Paris Saint-Germain", "Chelsea",
-    "Juventus", "AC Milan", "Inter Milan", "Atletico Madrid"
+    "Real Madrid", "Barcelona", "Manchester City", "Liverpool",
+    "Bayern Munich", "Arsenal", "PSG", "Juventus"
 ]
 
-# 가짜 팀 스탯 (승률, 랭킹, 부상자 수)
+# 팀별 임의 승률, 랭킹, 부상자 수 (예시값)
 team_stats = {
-    "Real Madrid": {"win_rate": 0.75, "rank": 1, "injuries": 1},
-    "Barcelona": {"win_rate": 0.70, "rank": 2, "injuries": 2},
-    "Manchester City": {"win_rate": 0.80, "rank": 1, "injuries": 0},
-    "Bayern Munich": {"win_rate": 0.78, "rank": 2, "injuries": 1},
-    "Liverpool": {"win_rate": 0.65, "rank": 4, "injuries": 3},
-    "Arsenal": {"win_rate": 0.68, "rank": 5, "injuries": 2},
-    "Paris Saint-Germain": {"win_rate": 0.72, "rank": 3, "injuries": 1},
-    "Chelsea": {"win_rate": 0.55, "rank": 8, "injuries": 4},
-    "Juventus": {"win_rate": 0.60, "rank": 6, "injuries": 2},
-    "AC Milan": {"win_rate": 0.62, "rank": 7, "injuries": 2},
-    "Inter Milan": {"win_rate": 0.66, "rank": 5, "injuries": 1},
-    "Atletico Madrid": {"win_rate": 0.64, "rank": 6, "injuries": 2}
+    "Real Madrid":       {"win_rate": 0.8, "ranking": 1, "injuries": 1},
+    "Barcelona":         {"win_rate": 0.7, "ranking": 2, "injuries": 2},
+    "Manchester City":   {"win_rate": 0.75, "ranking": 1, "injuries": 1},
+    "Liverpool":         {"win_rate": 0.65, "ranking": 3, "injuries": 3},
+    "Bayern Munich":     {"win_rate": 0.78, "ranking": 1, "injuries": 1},
+    "Arsenal":           {"win_rate": 0.6, "ranking": 4, "injuries": 2},
+    "PSG":               {"win_rate": 0.7, "ranking": 2, "injuries": 2},
+    "Juventus":          {"win_rate": 0.5, "ranking": 5, "injuries": 4}
 }
 
-# 페이지 설정
-st.set_page_config(page_title="AI Match Predictor", layout="centered")
-st.title("⚽ Real Match AI Predictor (No ML)")
-st.markdown("This version uses basic statistics to guess match outcomes.")
+# 훈련용 더미 데이터 생성
+X = []
+y = []
+
+for home in team_names:
+    for away in team_names:
+        if home == away:
+            continue
+        h = team_stats[home]
+        a = team_stats[away]
+        features = [
+            h["win_rate"], h["ranking"], h["injuries"],
+            a["win_rate"], a["ranking"], a["injuries"]
+        ]
+        # 단순히 승률 높은 팀이 이기는 것으로 예측 (예시)
+        label = 1 if h["win_rate"] > a["win_rate"] else -1 if h["win_rate"] < a["win_rate"] else 0
+        X.append(features)
+        y.append(label)
+
+model = RandomForestClassifier()
+model.fit(X, y)
 
 # UI
-home_team = st.selectbox("Select Home Team", team_names)
-away_team = st.selectbox("Select Away Team", team_names)
+st.set_page_config(page_title="Soccer Predictor", layout="centered")
+st.title("⚽ AI Match Predictor")
+st.markdown("Predict outcome using AI based on stats (win rate, ranking, injuries)")
 
-# 예측
+home_team = st.selectbox("🏠 Home Team", team_names)
+away_team = st.selectbox("🛫 Away Team", team_names)
+
 if st.button("Predict Result"):
     if home_team == away_team:
-        st.warning("Home and Away team must be different.")
+        st.warning("Teams must be different.")
     else:
-        # 간단한 점수 계산
-        def score(team):
-            stat = team_stats[team]
-            return stat["win_rate"] * 0.5 + (10 - stat["rank"]) * 0.3 - stat["injuries"] * 0.2
+        h = team_stats[home_team]
+        a = team_stats[away_team]
+        input_data = [[
+            h["win_rate"], h["ranking"], h["injuries"],
+            a["win_rate"], a["ranking"], a["injuries"]
+        ]]
+        pred = model.predict(input_data)[0]
+        proba = model.predict_proba(input_data)[0]
 
-        home_score = score(home_team) + random.uniform(-0.1, 0.1)
-        away_score = score(away_team) + random.uniform(-0.1, 0.1)
-
-        # 승패 판단
-        if home_score > away_score:
-            winner = f"🏠 **{home_team} wins!**"
-        elif away_score > home_score:
-            winner = f"🛫 **{away_team} wins!**"
+        if pred == 1:
+            st.success(f"🏠 **{home_team} wins**")
+        elif pred == -1:
+            st.success(f"🛫 **{away_team} wins**")
         else:
-            winner = "⚔️ **Draw**"
+            st.info("⚔️ **Draw**")
 
-        # 점수 예측
-        home_goals = max(0, int(round(home_score * 2)))
-        away_goals = max(0, int(round(away_score * 2)))
-
-        st.subheader("Prediction Result:")
-        st.markdown(winner)
-        st.markdown(f"**Predicted Score:** {home_team} {home_goals} - {away_goals} {away_team}")
+        st.markdown(f"**Home Win Probability:** {proba[model.classes_ == 1][0]*100:.2f}%")
+        st.markdown(f"**Away Win Probability:** {proba[model.classes_ == -1][0]*100:.2f}%")
