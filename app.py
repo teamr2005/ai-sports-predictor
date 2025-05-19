@@ -3,7 +3,7 @@ import pandas as pd
 import pickle
 
 # 모델과 팀 이름 불러오기
-with open("final_model_small_revised.pkl", "rb") as f:
+with open("final_model_small.pkl", "rb") as f:
     model = pickle.load(f)
 
 with open("team_names.pkl", "rb") as f:
