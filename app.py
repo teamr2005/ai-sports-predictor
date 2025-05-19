@@ -1,15 +1,15 @@
 import streamlit as st
 import pandas as pd
-import joblib
+import pickle
 
-# 모델 & 팀 목록 불러오기
-with open("final_model_small.pkl", "rb") as f:
-    model = joblib.load(f)
+# 모델과 팀 이름 불러오기
+with open("final_model_small_revised.pkl", "rb") as f:
+    model = pickle.load(f)
 
 with open("team_names.pkl", "rb") as f:
-    team_names = joblib.load(f)
+    team_names = pickle.load(f)
 
-# 웹 UI 구성
+# 웹 페이지 기본 설정
 st.set_page_config(page_title="AI Match Predictor", layout="centered")
 st.title("⚽ Real Match AI Predictor")
 st.markdown("Predict real soccer results using machine learning")
@@ -33,12 +33,11 @@ if st.button("Predict Result"):
         if pred == 1:
             result = f"🏠 **{home_team} wins**"
         elif pred == -1:
-            result = f"✈️ **{away_team} wins**"
+            result = f"🛫 **{away_team} wins**"
         else:
-            result = "⚖️ **Draw**"
+            result = "⚔️ **Draw**"
 
         st.subheader("Prediction Result:")
         st.markdown(result)
-        st.markdown(f"**Home Win Probability:** {proba[2]*100:.2f}%")
-        st.markdown(f"**Draw Probability:** {proba[1]*100:.2f}%")
+        st.markdown(f"**Home Win Probability:** {proba[1]*100:.2f}%")
         st.markdown(f"**Away Win Probability:** {proba[0]*100:.2f}%")
