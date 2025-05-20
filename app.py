@@ -1,7 +1,3 @@
-# Re-run the previous cell to generate the full code again after reset
-import textwrap
-
-app_code = textwrap.dedent("""
 import streamlit as st
 import pandas as pd
 import requests
@@ -80,6 +76,3 @@ if team1 and team2 and team1 != team2:
         st.error(f"Error: {e}")
 else:
     st.info("Enter two different team names to begin.")
-""")
-
-app_code
